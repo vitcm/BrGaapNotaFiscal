@@ -1,0 +1,75 @@
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" controllerName="sap.ui.demo.app.controller.App">
+    <App>
+        <pages>
+            <Page title="{global>/appTitle}">
+                <content>
+                  <VBox>
+                    <Title text="Cadastro de Cliente"/>
+                    <Input id="clienteNome" placeholder="Nome do Cliente"/>
+                    <Button text="Cadastrar Cliente" press="onCadastrarCliente"/>
+                  </VBox>
+                </content>
+                <content></content>
+                <content>
+                  <VBox>
+                    <Title text="Cadastro de Fornecedor"/>
+                    <Input id="fornecedorNome" placeholder="Nome do Fornecedor"/>
+                    <Button text="Cadastrar Fornecedor" press="onCadastrarFornecedor"/>
+                  </VBox>
+                </content>
+                <content>
+                  <VBox>
+                    <Title text="Cadastro de Nota Fiscal"/>
+                    <Input id="notaNumero" placeholder="Número da Nota Fiscal"/>
+                    <Input id="notaValor" placeholder="Valor da Nota Fiscal"/>
+                    <Input id="selectCliente" placeholder="Código Cliente da Nota Fiscal"/>
+                    <Input id="selectFornecedor" placeholder="Código Fornecedor da Nota Fiscal"/>
+                    <Button text="Cadastrar Nota Fiscal" press="onCadastrarNota"/>
+                  </VBox>
+                </content>
+
+                <content>
+                  <Title text="Lista de Notas Fiscais"/>
+                  <SearchField id="searchNota" placeholder="Buscar por número da nota" search="onSearchNota"/>
+                  <Table id="notaFiscalTable" items="{dados>/notasFiscais}" selectionChange="onRowSelect" mode="SingleSelect">
+                      <columns>
+                          <Column>
+                              <Text text="Número"/>
+                          </Column>
+                          <Column>
+                              <Text text="Valor"/>
+                          </Column>
+                          <Column>
+                              <Text text="Cliente ID"/>
+                          </Column>
+                          <Column>
+                              <Text text="Fornecedor ID"/>
+                          </Column>
+                      </columns>
+                      <items>
+                          <ColumnListItem>
+                              <cells>
+                                  <Text text="{dados>numeroNota}"/>
+                                  <Text text="{dados>valor}"/>
+                                  <Text text="{dados>clienteId}"/>
+                                  <Text text="{dados>fornecedorId}"/>
+                              </cells>
+                          </ColumnListItem>
+                      </items>
+                  </Table>
+                  <Dialog id="notaFiscalDialog" title="Detalhes da Nota Fiscal">
+                    <VBox>
+                        <Text text="Número da Nota Fiscal: {dados>numeroNota}"/>
+                        <Text text="Valor da Nota Fiscal: {dados>valor}"/>
+                        <Text text="Cliente da Nota Fiscal: {dados>clienteId}"/>
+                        <Text text="Fornecedor da Nota Fiscal: {dados>fornecedorId}"/>
+                    </VBox>
+                    <buttons>
+                        <Button text="Fechar" press="onCloseDialog"/>
+                    </buttons>
+                  </Dialog>
+                </content>
+            </Page>
+        </pages>
+    </App>
+</mvc:View>

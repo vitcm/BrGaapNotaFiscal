@@ -1,0 +1,9 @@
+specVersion: "2.4"
+metadata:
+  name: nota-fiscal-frontend
+type: application
+framework:
+  name: SAPUI5
+  version: "1.92.0"
+  libraries:
+    - name: "sap.m"

@@ -1,0 +1,24 @@
+{
+  "sap.app": {
+    "id": "sap.ui.demo.app",
+    "type": "application",
+    "title": "Meu App SAPUI5",
+    "description": "Aplicação SAPUI5 básica",
+    "resources": "resources.json"
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "rootView": {
+      "viewName": "sap.ui.demo.app.view.App",
+      "type": "XML",
+      "async": true
+    }
+  }
+}

@@ -1,0 +1,6 @@
+@NotaFiscalBRGaap_HostAddress = http://localhost:5201
+
+GET {{NotaFiscalBRGaap_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

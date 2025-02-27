@@ -1,0 +1,14 @@
+{
+  "name": "nota-fiscal-frontend",
+  "version": "1.0.0",
+  "description": "Projeto SAPUI5 para Notas Fiscais",
+  "dependencies": {
+    "@ui5/cli": "^3.2.0"
+  },
+  "devDependencies": {
+    "@ui5/project": "^1.1.0"
+  },
+  "scripts": {
+    "start": "ui5 serve --open"
+  }
+}
