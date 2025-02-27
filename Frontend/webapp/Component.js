@@ -9,10 +9,8 @@ sap.ui.define(
       },
 
       init: function () {
-        // Chama o método init da classe pai
         UIComponent.prototype.init.apply(this, arguments);
 
-        // Modelo global para armazenar dados do app
         var oData = {
           appTitle: "Teste Vitórya - BRGaap - App Notas Fiscais",
         };
