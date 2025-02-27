@@ -23,8 +23,45 @@ sap.ui.define(
           type: "GET",
           success: function (data) {
             console.log("Dados retornados pela API:", data);
-            oModel.setProperty("/notasFiscais", data);
-            oModel.refresh();
+
+            $.ajax({
+              url: "http://localhost:5201/api/Cliente",
+              type: "GET",
+              success: function (clientes) {
+                oModel.setProperty("/clientes", clientes);
+
+                $.ajax({
+                  url: "http://localhost:5201/api/Fornecedor",
+                  type: "GET",
+                  success: function (fornecedores) {
+                    oModel.setProperty("/fornecedores", fornecedores);
+
+                    var notasFiscaisComNomes = data.map(function (nota) {
+                      var cliente = clientes.find(
+                        (c) => c.id === nota.clienteId
+                      );
+                      var fornecedor = fornecedores.find(
+                        (f) => f.id === nota.fornecedorId
+                      );
+                      return {
+                        ...nota,
+                        clienteNome: cliente ? cliente.nome : "",
+                        fornecedorNome: fornecedor ? fornecedor.nome : "",
+                      };
+                    });
+
+                    oModel.setProperty("/notasFiscais", notasFiscaisComNomes);
+                    oModel.refresh();
+                  },
+                  error: function (err) {
+                    console.error("Erro ao carregar fornecedores:", err);
+                  },
+                });
+              },
+              error: function (err) {
+                console.error("Erro ao carregar clientes:", err);
+              },
+            });
           },
           error: function (err) {
             console.error("Erro ao carregar notas fiscais:", err);
@@ -33,103 +70,104 @@ sap.ui.define(
         });
       },
 
-      onCadastrarCliente: function () {
-        console.log("Botão Cadastrar Cliente clicado!");
-        var oModel = this.getView().getModel("dados");
-        var nomeCliente = this.getView().byId("clienteNome").getValue();
-
-        if (!nomeCliente) {
-          MessageToast.show("Por favor, insira o nome do cliente.");
-          return;
-        }
-
-        var oCliente = { nome: nomeCliente };
-
-        $.ajax({
-          url: "http://localhost:5201/api/Cliente",
-          type: "POST",
-          contentType: "application/json",
-          data: JSON.stringify(oCliente),
-          success: function () {
-            MessageToast.show("Cliente cadastrado com sucesso!");
-            oModel.getData().clientes.push(oCliente);
-            oModel.refresh();
-          },
-          error: function (err) {
-            MessageToast.show("Erro ao cadastrar cliente.");
-            console.error(err);
-          },
-        });
-      },
-
-      onCadastrarFornecedor: function () {
-        var oModel = this.getView().getModel("dados");
-        var nomeFornecedor = this.getView().byId("fornecedorNome").getValue();
-
-        if (!nomeFornecedor) {
-          MessageToast.show("Por favor, insira o nome do fornecedor.");
-          return;
-        }
-
-        var oFornecedor = { nome: nomeFornecedor };
-
-        $.ajax({
-          url: "http://localhost:5201/api/Fornecedor",
-          type: "POST",
-          contentType: "application/json",
-          data: JSON.stringify(oFornecedor),
-          success: function () {
-            MessageToast.show("Fornecedor cadastrado com sucesso!");
-            oModel.getData().fornecedores.push(oFornecedor);
-            oModel.refresh();
-          },
-          error: function (err) {
-            MessageToast.show("Erro ao cadastrar fornecedor.");
-            console.error(err);
-          },
-        });
-      },
-
       onCadastrarNota: function () {
-        console.log("cadastrei nota");
         var oModel = this.getView().getModel("dados");
         var numeroNota = this.getView().byId("notaNumero").getValue();
         var valorNota = this.getView().byId("notaValor").getValue();
-        var clienteNota = this.getView().byId("selectCliente").getValue();
-        var fornecedorNota = this.getView().byId("selectFornecedor").getValue();
+        var nomeCliente = this.getView().byId("selectCliente").getValue();
+        var nomeFornecedor = this.getView().byId("selectFornecedor").getValue();
 
-        if (!numeroNota || !valorNota || !clienteNota || !fornecedorNota) {
+        if (!numeroNota || !valorNota || !nomeCliente || !nomeFornecedor) {
           MessageToast.show("Por favor, preencha todos os campos.");
           return;
         }
 
-        var oNota = {
-          numeroNota: numeroNota,
-          valor: parseFloat(valorNota),
-          clienteId: parseInt(clienteNota),
-          fornecedorId: parseInt(fornecedorNota),
-        };
+        var oModelClientes = oModel.getData().clientes;
+        var clienteExistente = oModelClientes.find(
+          (c) => c.nome === nomeCliente
+        );
 
-        $.ajax({
-          url: "http://localhost:5201/api/NotaFiscal",
-          type: "POST",
-          contentType: "application/json",
-          data: JSON.stringify(oNota),
-          success: function () {
-            MessageToast.show("Nota Fiscal cadastrada com sucesso!");
-            oModel.getData().notasFiscais.push(oNota);
-            oModel.refresh();
-          },
-          error: function (err) {
-            MessageToast.show("Erro ao cadastrar Nota Fiscal.");
-            console.error(err);
-          },
-        });
+        if (!clienteExistente) {
+          var oCliente = { nome: nomeCliente };
+          console.log("entrei", oCliente);
+
+          $.ajax({
+            url: "http://localhost:5201/api/Cliente",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(oCliente),
+            success: function (data) {
+              MessageToast.show("Cliente cadastrado com sucesso!");
+              oModelClientes.push({ nome: nomeCliente, id: data.id });
+              oModel.refresh();
+              salvarNotaFiscal(data.id, nomeFornecedor);
+            },
+            error: function (err) {
+              MessageToast.show("Erro ao cadastrar cliente.");
+              console.error(err);
+            },
+          });
+        } else {
+          salvarNotaFiscal(clienteExistente.id, nomeFornecedor);
+        }
+
+        function salvarNotaFiscal(clienteId, nomeFornecedor) {
+          var oModelFornecedores = oModel.getData().fornecedores;
+          var fornecedorExistente = oModelFornecedores.find(
+            (f) => f.nome === nomeFornecedor
+          );
+
+          if (!fornecedorExistente) {
+            var oFornecedor = { nome: nomeFornecedor };
+
+            $.ajax({
+              url: "http://localhost:5201/api/Fornecedor",
+              type: "POST",
+              contentType: "application/json",
+              data: JSON.stringify(oFornecedor),
+              success: function (data) {
+                MessageToast.show("Fornecedor cadastrado com sucesso!");
+                oModelFornecedores.push({ nome: nomeFornecedor, id: data.id });
+                oModel.refresh();
+                cadastrarNotaFiscal(clienteId, data.id);
+              },
+              error: function (err) {
+                MessageToast.show("Erro ao cadastrar fornecedor.");
+                console.error(err);
+              },
+            });
+          } else {
+            cadastrarNotaFiscal(clienteId, fornecedorExistente.id);
+          }
+        }
+
+        function cadastrarNotaFiscal(clienteId, fornecedorId) {
+          var oNota = {
+            numeroNota: numeroNota,
+            valor: parseFloat(valorNota),
+            clienteId: clienteId,
+            fornecedorId: fornecedorId,
+          };
+
+          $.ajax({
+            url: "http://localhost:5201/api/NotaFiscal",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(oNota),
+            success: function () {
+              MessageToast.show("Nota Fiscal cadastrada com sucesso!");
+              oModel.getData().notasFiscais.push(oNota);
+              oModel.refresh();
+            },
+            error: function (err) {
+              MessageToast.show("Erro ao cadastrar Nota Fiscal.");
+              console.error(err);
+            },
+          });
+        }
       },
 
       onRowSelect: function (oEvent) {
-        console.log("Item pressionado!");
-
         var oSelectedItem =
           oEvent.getParameter("listItem") ||
           oEvent.getParameter("selectedItem");
